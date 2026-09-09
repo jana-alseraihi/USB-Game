@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>60 Seconds to Secure</title>
+<style>
+  :root{
+    --green: #10b981;
+    --green-dim: #34d399;
+    --red: #ef4444;
+    --red-dim: #f87171;
+    --white: #f8fafc;
+    --card-text: #12283a;
+    --navy-1: #2a5369;
+    --navy-2: #13293b;
+    --navy-3: #0a1826;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 50% 20%, var(--navy-1) 0%, var(--navy-2) 55%, var(--navy-3) 100%);
+    color: var(--white);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px 16px;
+  }
+  .screen{
+    width:100%;
+    max-width:520px;
+    animation: fadeSlideIn .5s ease both;
+  }
+  @keyframes fadeSlideIn{
+    from{opacity:0; transform:translateY(18px);}
+    to{opacity:1; transform:translateY(0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .screen{animation:none;}
+  }
+
+  h1{font-size:2.7rem; font-weight:900; margin:0 0 10px; letter-spacing:-0.03em; line-height:1.1;}
+  .warn-title{
+    font-size:2.1rem;
+    font-weight:900;
+    color: var(--red);
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    line-height:1.15;
+    margin:0 0 18px;
+    text-shadow: 0 0 18px rgba(239,68,68,.5);
+  }
+  h2{font-size:1.3rem; margin:0 0 6px;}
+  p.sub{color:#c9d6e0; margin:0 0 28px; line-height:1.5;}
+
+  .center{text-align:center;}
+
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+    outline:none;
+  }
+  .btn-primary{
+    background: var(--green);
+    color:#06281c;
+    font-weight:700;
+    font-size:1.05rem;
+    padding:14px 32px;
+    border-radius:14px;
+    transition: transform .15s ease, box-shadow .15s ease;
+    box-shadow: 0 0 0 rgba(16,185,129,0);
+  }
+  .btn-primary:hover{ transform: translateY(-2px); box-shadow: 0 8px 24px rgba(16,185,129,.35); }
+  .btn-primary:active{ transform: scale(.97); }
+
+  input[type=text]{
+    width:100%;
+    padding:13px 16px;
+    border-radius:12px;
+    border:1px solid rgba(255,255,255,.15);
+    background: rgba(255,255,255,.06);
+    color: var(--white);
+    font-size:1rem;
+    margin-bottom:14px;
+  }
+  input[type=text]:focus{ border-color: var(--green-dim); }
+  label{
+    display:block;
+    font-size:.82rem;
+    color:#9fb3c2;
+    margin-bottom:6px;
+    font-weight:600;
+  }
+
+  /* Header */
+  .game-header{
+    width:100%; max-width:520px;
+    margin-bottom:22px;
+  }
+  .header-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer{
+    font-size:1.4rem;
+    font-weight:800;
+    transition: color .2s ease;
+  }
+  .timer.urgent{
+    color: var(--red);
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.12); }
+  }
+  .score{
+    font-size:1rem;
+    color: var(--green-dim);
+    font-weight:700;
+  }
+  .progress-track{
+    height:8px;
+    border-radius:6px;
+    background: rgba(255,255,255,.12);
+    overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    border-radius:6px;
+    transition: width 1s linear, background-color 1s linear;
+  }
+
+  .mission-title{
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#8fb0c4;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  /* USB drive - pure CSS */
+  .usb{
+    width:70px;
+    height:34px;
+    background: linear-gradient(180deg,#e5e9ee,#b9c2cc);
+    border-radius:4px;
+    position:relative;
+    box-shadow: 0 4px 14px rgba(0,0,0,.4);
+  }
+  .usb:before{
+    content:"";
+    position:absolute;
+    left:-14px; top:10px;
+    width:16px; height:14px;
+    background:#7d8894;
+    border-radius:2px 0 0 2px;
+  }
+  .usb:after{
+    content:"";
+    position:absolute;
+    right:8px; top:8px;
+    width:18px; height:18px;
+    background: var(--navy-2);
+    border-radius:3px;
+  }
+  .usb-wrap{
+    display:flex;
+    justify-content:center;
+    margin: 18px 0 26px;
+  }
+  .usb-wrap.floating{
+    animation: floatY 2.4s ease-in-out infinite;
+  }
+  @keyframes floatY{
+    0%,100%{ transform: translateY(0); }
+    50%{ transform: translateY(-10px); }
+  }
+  .usb-wrap.dragging{
+    animation:none;
+    transform: scale(1.15) rotate(-6deg);
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,.5));
+  }
+  .usb-wrap.selected{
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 10px rgba(52,211,153,.6));
+  }
+
+  .drop-zones{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+  }
+  .drop-zone{
+    flex:1 1 140px;
+    border:2px dashed rgba(255,255,255,.25);
+    border-radius:16px;
+    padding:18px 10px;
+    text-align:center;
+    font-weight:700;
+    font-size:.88rem;
+    transition: border-color .15s ease, background .15s ease, transform .15s ease;
+  }
+  .drop-zone .zone-icon{ font-size:1.6rem; display:block; margin-bottom:8px; }
+  .drop-zone.hover{ transform: scale(1.03); background: rgba(255,255,255,.06); }
+  .drop-zone.correct-flash{ border-color: var(--green); background: rgba(16,185,129,.18); }
+  .drop-zone.wrong-flash{ border-color: var(--red); background: rgba(239,68,68,.18); animation: shake .4s; }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-8px); }
+    75%{ transform: translateX(8px); }
+  }
+
+  /* Mission 2 cards */
+  .card-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  .card{
+    background: var(--white);
+    color: var(--card-text);
+    border-radius:12px;
+    padding:13px 12px;
+    font-size:.82rem;
+    line-height:1.35;
+    cursor:pointer;
+    position:relative;
+    transition: transform .12s ease, box-shadow .12s ease;
+    box-shadow: 0 3px 10px rgba(0,0,0,.25);
+    user-select:none;
+  }
+  .card:hover{ transform: translateY(-3px); box-shadow: 0 8px 18px rgba(0,0,0,.35); }
+  .card:active{ transform: scale(.96); }
+  .card.found-flag{
+    outline: 2px solid var(--green);
+  }
+  .card.wrong-pick{
+    animation: shake .4s;
+  }
+  .card.disabled{
+    opacity:.55;
+    cursor:default;
+    pointer-events:none;
+  }
+  .check-badge{
+    position:absolute;
+    top:-8px; right:-8px;
+    width:24px; height:24px;
+    border-radius:50%;
+    background: var(--green);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:.8rem;
+    font-weight:900;
+    animation: popIn .25s ease;
+  }
+  @keyframes popIn{
+    from{ transform: scale(0); }
+    to{ transform: scale(1); }
+  }
+  .flag-counter{
+    text-align:center;
+    margin-bottom:12px;
+    color:#c9d6e0;
+    font-size:.9rem;
+  }
+
+  /* Mission 3 */
+  .question-box{
+    background: rgba(255,255,255,.05);
+    border-radius:16px;
+    padding:20px;
+    margin-bottom:16px;
+  }
+  .q-text{
+    font-size:1.02rem;
+    font-weight:600;
+    margin-bottom:16px;
+    line-height:1.4;
+  }
+  .option{
+    display:block;
+    width:100%;
+    text-align:left;
+    background: rgba(255,255,255,.06);
+    color: var(--white);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-bottom:9px;
+    font-size:.92rem;
+    transition: background .12s ease, transform .1s ease, border-color .12s ease;
+  }
+  .option:hover{ background: rgba(255,255,255,.12); transform: translateX(2px); }
+  .option.correct{ border-color: var(--green); background: rgba(16,185,129,.18); }
+  .option.wrong{ border-color: var(--red); background: rgba(239,68,68,.18); animation: shake .4s; }
+  .option.disabled{ pointer-events:none; opacity:.7; }
+
+  /* Feedback toast */
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:30px;
+    transform: translate(-50%, 20px);
+    padding:12px 22px;
+    border-radius:12px;
+    font-weight:700;
+    font-size:.95rem;
+    opacity:0;
+    pointer-events:none;
+    transition: transform .3s ease, opacity .3s ease;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    z-index:50;
+  }
+  .toast.show{
+    opacity:1;
+    transform: translate(-50%, 0);
+  }
+  .toast.good{ background: var(--green); color:#06281c; }
+  .toast.bad{ background: var(--red); color:#2a0606; }
+
+  /* End screen */
+  .score-circle{
+    width:140px; height:140px;
+    border-radius:50%;
+    margin: 10px auto 22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    background: var(--navy-2);
+    position:relative;
+    animation: springIn .55s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes springIn{
+    from{ transform: scale(0); opacity:0; }
+    to{ transform: scale(1); opacity:1; }
+  }
+  .score-circle:before{
+    content:"";
+    position:absolute;
+    inset:-6px;
+    border-radius:50%;
+    border:2px solid var(--green-dim);
+    animation: ringPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes ringPulse{
+    0%,100%{ opacity:.5; transform:scale(1); }
+    50%{ opacity:1; transform:scale(1.06); }
+  }
+  .score-circle .num{ font-size:2.2rem; font-weight:900; color:var(--green-dim); }
+  .score-circle .denom{ font-size:.8rem; color:#9fb3c2; }
+  .tier{
+    font-size:1.15rem;
+    font-weight:800;
+    margin-bottom:6px;
+  }
+  .tier-msg{
+    color:#c9d6e0;
+    margin-bottom:26px;
+    line-height:1.5;
+  }
+
+  .footer-hint{
+    margin-top:18px;
+    font-size:.78rem;
+    color:#6f8496;
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- Sounds (Web Audio API) ----------
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+  function ctx(){ if(!actx) actx = new AudioCtx(); return actx; }
+
+  function tone(freq, type, duration, delay, gainVal){
+    const c = ctx();
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.value = freq;
+    gain.gain.value = 0;
+    osc.connect(gain).connect(c.destination);
+    const start = c.currentTime + (delay||0);
+    gain.gain.setValueAtTime(0, start);
+    gain.gain.linearRampToValueAtTime(gainVal||0.18, start + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, start + duration);
+    osc.start(start);
+    osc.stop(start + duration + 0.02);
+  }
+
+  function playCorrect(){ tone(660,"sine",0.14,0); tone(880,"sine",0.18,0.11); }
+  function playWrong(){ tone(160,"sawtooth",0.28,0,0.15); }
+  function playClick(){ tone(520,"triangle",0.06,0,0.12); }
+  function playFinish(){
+    [523,659,784,1046].forEach((f,i)=> tone(f,"sine",0.22,i*0.14,0.16));
+  }
+
+  // ---------- State ----------
+  const TOTAL_TIME = 60;
+  const state = {
+    screen: "start",       // start | playerinfo | mission1 | mission2 | mission3 | end
+    name: "",
+    empId: "",
+    dept: "",
+    timeLeft: TOTAL_TIME,
+    score: 0,
+    timerHandle: null,
+    m1Done: false,
+    m2FoundFlags: 0,
+    m2Answered: {},          // card index -> 'flag'|'safe'
+    m3Answered: [false,false,false],
+    m3Correct: [false,false,false],
+    m3Picked: [null,null,null],
+  };
+
+  const RED_FLAG_CARDS = [
+    { text: "URGENT: Verify your account in 24 hours or it will be suspended.", flag: true },
+    { text: "From: IT-Support@company-secure-verify.net", flag: true },
+    { text: "Please review the Q3 budget spreadsheet attached.", flag: false },
+    { text: "Click here to claim your prize: $500 gift card!", flag: true },
+    { text: "Meeting moved to 3 PM — see updated calendar invite.", flag: false },
+    { text: "Your password expires in 2 days. Reply with it here to keep access.", flag: true },
+    { text: "Reminder: badge renewal deadline Friday, visit the IT portal on the intranet.", flag: false },
+    { text: "Dear Employee, wire $10,000 to the vendor account immediately. — CEO", flag: true },
+  ];
+
+  const QUESTIONS = [
+    {
+      q: "Someone calls claiming to be from IT and asks for your password to \u201cfix an urgent issue.\u201d What do you do?",
+      options: [
+        "Give them the password — they said they're from IT.",
+        "Hang up and report it through the official IT/security channel.",
+        "Ask for their employee ID over the phone, then give the password."
+      ],
+      correct: 1
+    },
+    {
+      q: "You get an email from \u201cyour bank\u201d asking you to click a link and re-enter your login details right away.",
+      options: [
+        "Click the link and log in immediately, just in case.",
+        "Ignore the link — go to the bank's official site or app directly instead.",
+        "Reply to the email asking if it's really from the bank."
+      ],
+      correct: 1
+    },
+    {
+      q: "You get an obvious spam email — not a scary threat, just junk. What's the best move?",
+      options: [
+        "Reply \u201cunsubscribe\u201d so they stop emailing you.",
+        "Use the \u201cReport spam/phishing\u201d button instead of replying.",
+        "Just delete it — no need to tell anyone."
+      ],
+      correct: 1
+    }
+  ];
+
+  function totalFlags(){ return RED_FLAG_CARDS.filter(c=>c.flag).length; }
+
+  // ---------- Timer / game loop ----------
+  function startTimer(){
+    stopTimer();
+    state.timerHandle = setInterval(()=>{
+      state.timeLeft -= 1;
+
+      if(state.timeLeft <= 0){
+        stopTimer();
+        state.timeLeft = 0;
+        playFinish();
+        goTo("end");
+        return;
+      }
+      renderHeaderOnly();
+    }, 1000);
+  }
+  function stopTimer(){
+    if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle = null; }
+  }
+
+  // ---------- Toast ----------
+  let toastTimeout = null;
+  function showToast(msg, good){
+    let t = document.getElementById("toast");
+    if(!t){
+      t = document.createElement("div");
+      t.id = "toast";
+      t.className = "toast";
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.className = "toast show " + (good ? "good" : "bad");
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(()=>{ t.className = "toast " + (good ? "good" : "bad"); }, 1400);
+  }
+
+  // ---------- Navigation ----------
+  function goTo(screen){
+    state.screen = screen;
+    render();
+  }
+
+  function beginGame(){
+    if(!state.name.trim() || !state.empId.trim()) return;
+    state.timeLeft = TOTAL_TIME;
+    goTo("mission1");
+    startTimer();
+  }
+
+  function resetGame(){
+    stopTimer();
+    state.screen = "start";
+    state.timeLeft = TOTAL_TIME;
+    state.score = 0;
+    state.m1Done = false;
+    state.m2FoundFlags = 0;
+    state.m2Answered = {};
+    state.m3Answered = [false,false,false];
+    state.m3Correct = [false,false,false];
+    state.m3Picked = [null,null,null];
+    render();
+  }
+
+  // ---------- Mission 1 ----------
+  function handleUsbDrop(zone){
+    if(state.m1Done) return;
+    if(zone === "safe"){
+      state.m1Done = true;
+      state.score += 2;
+      playCorrect();
+      flashZone("safe", true);
+      showToast("Correct — always hand unknown drives to IT.", true);
+      setTimeout(()=>{
+        if(state.screen === "mission1") goTo("mission2");
+      }, 900);
+    } else {
+      playWrong();
+      flashZone(zone, false);
+      const msg = zone === "trash"
+        ? "Don't throw it away — hand unknown drives to IT Security. Try again."
+        : "Never plug in an unknown USB drive. Try again.";
+      showToast(msg, false);
+      setTimeout(()=>{
+        const el = document.querySelector(`.drop-zone[data-zone="${zone}"]`);
+        if(el) el.classList.remove("wrong-flash");
+      }, 700);
+    }
+  }
+  function flashZone(zone, good){
+    const el = document.querySelector(`.drop-zone[data-zone="${zone}"]`);
+    if(!el) return;
+    el.classList.add(good ? "correct-flash" : "wrong-flash");
+  }
+
+  // ---------- Mission 2 ----------
+  function updateFlagCounter(){
+    const counterEl = document.querySelector(".flag-counter");
+    if(counterEl) counterEl.textContent = `${state.m2FoundFlags} / ${totalFlags()} red flags found`;
+  }
+
+  function handleCardClick(idx){
+    if(state.m2Answered[idx] !== undefined) return;
+    const card = RED_FLAG_CARDS[idx];
+    const el = document.querySelector(`.card[data-idx="${idx}"]`);
+    if(card.flag){
+      state.m2Answered[idx] = "flag";
+      state.m2FoundFlags += 1;
+      state.score += 1;
+      playCorrect();
+      if(el){
+        el.classList.add("found-flag", "disabled");
+        const badge = document.createElement("div");
+        badge.className = "check-badge";
+        badge.textContent = "\u2713";
+        el.appendChild(badge);
+      }
+      updateFlagCounter();
+      renderHeaderOnly();
+      showToast("Red flag spotted!", true);
+      if(state.m2FoundFlags >= totalFlags()){
+        setTimeout(()=>{
+          if(state.screen === "mission2") goTo("mission3");
+        }, 700);
+      }
+    } else {
+      state.m2Answered[idx] = "safe";
+      playWrong();
+      if(el){
+        el.classList.add("wrong-pick");
+        setTimeout(()=> el.classList.add("disabled"), 400);
+      }
+      showToast("That one's a normal message.", false);
+    }
+  }
+
+  // ---------- Mission 3 ----------
+  function paintQuestion(qIdx){
+    const boxes = document.querySelectorAll(".question-box");
+    const box = boxes[qIdx];
+    if(!box) return;
+    box.querySelectorAll(".option").forEach(btn=>{
+      const oi = Number(btn.dataset.o);
+      btn.classList.add("disabled");
+      if(oi === QUESTIONS[qIdx].correct) btn.classList.add("correct");
+      else if(oi === state.m3Picked[qIdx]) btn.classList.add("wrong");
+    });
+  }
+
+  function handleAnswer(qIdx, optIdx){
+    if(state.m3Answered[qIdx]) return;
+    const q = QUESTIONS[qIdx];
+    const correct = optIdx === q.correct;
+    state.m3Picked[qIdx] = optIdx;
+
+    if(correct){
+      state.m3Answered[qIdx] = true;
+      state.m3Correct[qIdx] = true;
+      state.score += 1;
+      playCorrect();
+      showToast("Right call.", true);
+      paintQuestion(qIdx);
+    } else {
+      playWrong();
+      showToast("Not the safest choice — try again.", false);
+      flashWrongOption(qIdx, optIdx);
+    }
+    renderHeaderOnly();
+    if(state.m3Answered.every(Boolean)){
+      setTimeout(()=>{
+        if(state.screen === "mission3"){
+          stopTimer();
+          state.timeLeft = 0;
+          playFinish();
+          goTo("end");
+        }
+      }, 700);
+    }
+  }
+
+  function flashWrongOption(qIdx, optIdx){
+    const boxes = document.querySelectorAll(".question-box");
+    const box = boxes[qIdx];
+    if(!box) return;
+    const btn = box.querySelector(`.option[data-o="${optIdx}"]`);
+    if(!btn) return;
+    btn.classList.add("wrong");
+    setTimeout(()=> btn.classList.remove("wrong"), 700);
+  }
+
+  // ---------- Render: header (timer/score/progress) ----------
+  function renderHeaderOnly(){
+    const timerEl = document.getElementById("timerVal");
+    const scoreEl = document.getElementById("scoreVal");
+    const fillEl = document.getElementById("progressFill");
+    if(!timerEl) return;
+    timerEl.textContent = state.timeLeft + "s";
+    timerEl.parentElement.classList.toggle("urgent", state.timeLeft <= 10);
+    scoreEl.textContent = "Score: " + Math.round(state.score * 10) / 10;
+    const pct = Math.max(0, (state.timeLeft / TOTAL_TIME) * 100);
+    fillEl.style.width = pct + "%";
+    const hue = Math.round((pct/100) * 120); // 120 green -> 0 red
+    fillEl.style.backgroundColor = `hsl(${hue}, 75%, 50%)`;
+  }
+
+  function headerHtml(){
+    const pct = Math.max(0, (state.timeLeft / TOTAL_TIME) * 100);
+    const hue = Math.round((pct/100) * 120);
+    return `
+      <div class="game-header">
+        <div class="header-row">
+          <div class="timer ${state.timeLeft<=10 ? 'urgent':''}" id="timerLabel">
+            <span id="timerVal">${state.timeLeft}s</span>
+          </div>
+          <div class="score" id="scoreVal">Score: ${Math.round(state.score*10)/10}</div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width:${pct}%; background-color: hsl(${hue},75%,50%);"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------- Screens ----------
+  function screenStart(){
+    return `
+      <div class="screen center">
+        <div class="warn-title">&#9888;&#65039; Don't Plug It In</div>
+        <div class="usb-wrap floating"><div class="usb"></div></div>
+        <h1>60 Seconds to Secure</h1>
+        <p class="sub">Three quick missions. One minute. See how sharp your security instincts really are.</p>
+        <button class="btn-primary" id="startBtn">START GAME</button>
+      </div>
+    `;
+  }
+
+  function screenPlayerInfo(){
+    return `
+      <div class="screen">
+        <div class="warn-title">&#9888;&#65039; Don't Plug It In</div>
+        <h2>Before we start</h2>
+        <p class="sub">Just so we know who to congratulate at the end.</p>
+        <label for="nameInput">Name</label>
+        <input type="text" id="nameInput" placeholder="" value="${escapeHtml(state.name)}">
+        <label for="idInput">Employee ID</label>
+        <input type="text" id="idInput" placeholder="" value="${escapeHtml(state.empId)}">
+        <label for="deptInput">Department</label>
+        <input type="text" id="deptInput" placeholder="" value="${escapeHtml(state.dept)}">
+        <p class="sub" id="deptWarn" style="color:var(--red); display:none; margin-top:-8px;">Please enter your department.</p>
+        <button class="btn-primary" id="continueBtn" style="width:100%;">CONTINUE</button>
+      </div>
+    `;
+  }
+
+  function screenMission1(){
+    const doneClass = state.m1Done ? "selected" : "floating";
+    return `
+      <div class="screen">
+        ${headerHtml()}
+        <div class="mission-title">Mission 1</div>
+        <h2>You found a USB drive on the floor.</h2>
+        <p class="sub">What's the safe move?</p>
+        <div class="usb-wrap ${doneClass}" id="usbEl" draggable="true"><div class="usb"></div></div>
+        <div class="drop-zones">
+          <div class="drop-zone" data-zone="risky" id="zoneRisky">
+            <span class="zone-icon">\u{1F4BB}</span>
+            Plug into my PC
+          </div>
+          <div class="drop-zone" data-zone="trash" id="zoneTrash">
+            <span class="zone-icon">\u{1F5D1}\uFE0F</span>
+            Throw it in the trash
+          </div>
+          <div class="drop-zone" data-zone="safe" id="zoneSafe">
+            <span class="zone-icon">\u{1F6E1}\uFE0F</span>
+            Report to IT Security
+          </div>
+        </div>
+        <p class="footer-hint">Drag the USB onto a zone — or tap the USB, then tap a zone.</p>
+      </div>
+    `;
+  }
+
+  function screenMission2(){
+    const found = state.m2FoundFlags;
+    const total = totalFlags();
+    return `
+      <div class="screen">
+        ${headerHtml()}
+        <div class="mission-title">Mission 2</div>
+        <h2>Spot the red flags</h2>
+        <div class="flag-counter">${found} / ${total} red flags found</div>
+        <div class="card-grid">
+          ${RED_FLAG_CARDS.map((c,i)=>{
+            const answered = state.m2Answered[i];
+            let cls = "card";
+            if(answered === "flag") cls += " found-flag";
+            if(answered) cls += " disabled";
+            return `<div class="${cls}" data-idx="${i}">${escapeHtml(c.text)}${answered==='flag' ? '<div class="check-badge">\u2713</div>' : ''}</div>`;
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function screenMission3(){
+    return `
+      <div class="screen">
+        ${headerHtml()}
+        <div class="mission-title">Mission 3</div>
+        <h2>Quick decisions</h2>
+        ${QUESTIONS.map((q,qi)=>{
+          const answered = state.m3Answered[qi];
+          return `
+            <div class="question-box">
+              <div class="q-text">${escapeHtml(q.q)}</div>
+              ${q.options.map((opt,oi)=>{
+                let cls = "option";
+                if(answered){
+                  cls += " disabled";
+                  if(oi === q.correct) cls += " correct";
+                  else if(oi === state.m3Picked[qi]) cls += " wrong";
+                }
+                return `<button class="${cls}" data-q="${qi}" data-o="${oi}">${escapeHtml(opt)}</button>`;
+              }).join("")}
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  }
+
+  function tierFor(score){
+    if(score >= 9) return { label: "Security Champion \u{1F6E1}\uFE0F", msg: "Sharp instincts — you'd catch what most people miss." };
+    if(score >= 6) return { label: "Security Aware \u2705", msg: "Solid judgment, with a little room to sharpen up." };
+    if(score >= 3) return { label: "Needs a Refresher \u26A0\uFE0F", msg: "A few gaps worth closing — consider a quick review." };
+    return { label: "High Risk \u{1F6A8}", msg: "This is exactly the kind of mistake attackers count on. Worth another pass." };
+  }
+
+  function screenEnd(){
+    const finalScore = Math.round(state.score * 10) / 10;
+    const tier = tierFor(finalScore);
+    return `
+      <div class="screen center">
+        <div class="mission-title">Mission Complete</div>
+        <h2>Nice work, ${escapeHtml(state.name) || "agent"}.</h2>
+        <div class="score-circle">
+          <div class="num">${finalScore}</div>
+          <div class="denom">/ 10</div>
+        </div>
+        <div class="tier">${tier.label}</div>
+        <div class="tier-msg">${tier.msg}</div>
+        <button class="btn-primary" id="playAgainBtn">PLAY AGAIN</button>
+      </div>
+    `;
+  }
+
+  // ---------- Master render ----------
+  function render(){
+    const app = document.getElementById("app");
+    let html = "";
+    switch(state.screen){
+      case "start": html = screenStart(); break;
+      case "playerinfo": html = screenPlayerInfo(); break;
+      case "mission1": html = screenMission1(); break;
+      case "mission2": html = screenMission2(); break;
+      case "mission3": html = screenMission3(); break;
+      case "end": html = screenEnd(); break;
+    }
+    app.innerHTML = html;
+    attachHandlers();
+  }
+
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+
+  // ---------- Event wiring ----------
+  function attachHandlers(){
+    if(state.screen === "start"){
+      const btn = document.getElementById("startBtn");
+      btn.addEventListener("click", ()=>{ playClick(); goTo("playerinfo"); });
+    }
+
+    if(state.screen === "playerinfo"){
+      const nameInput = document.getElementById("nameInput");
+      const idInput = document.getElementById("idInput");
+      const deptInput = document.getElementById("deptInput");
+      nameInput.addEventListener("input", e=> state.name = e.target.value);
+      idInput.addEventListener("input", e=> state.empId = e.target.value);
+      deptInput.addEventListener("input", e=> state.dept = e.target.value);
+      document.getElementById("continueBtn").addEventListener("click", ()=>{
+        if(!state.dept.trim()){
+          document.getElementById("deptWarn").style.display = "block";
+          deptInput.focus();
+          return;
+        }
+        playClick();
+        beginGame();
+      });
+    }
+
+    if(state.screen === "mission1"){
+      const usb = document.getElementById("usbEl");
+      const zones = document.querySelectorAll(".drop-zone");
+
+      // drag (desktop)
+      usb.addEventListener("dragstart", (e)=>{
+        usb.classList.add("dragging");
+      });
+      usb.addEventListener("dragend", ()=>{
+        usb.classList.remove("dragging");
+      });
+      zones.forEach(z=>{
+        z.addEventListener("dragover", (e)=>{ e.preventDefault(); z.classList.add("hover"); });
+        z.addEventListener("dragleave", ()=> z.classList.remove("hover"));
+        z.addEventListener("drop", (e)=>{
+          e.preventDefault();
+          z.classList.remove("hover");
+          handleUsbDrop(z.dataset.zone);
+        });
+      });
+
+      // tap fallback (mobile)
+      let selected = false;
+      usb.addEventListener("click", ()=>{
+        if(state.m1Done) return;
+        selected = !selected;
+        usb.classList.toggle("selected", selected);
+        playClick();
+      });
+      zones.forEach(z=>{
+        z.addEventListener("click", ()=>{
+          if(selected && !state.m1Done){
+            handleUsbDrop(z.dataset.zone);
+            selected = false;
+            usb.classList.remove("selected");
+          }
+        });
+      });
+    }
+
+    if(state.screen === "mission2"){
+      document.querySelectorAll(".card").forEach(card=>{
+        card.addEventListener("click", ()=> handleCardClick(Number(card.dataset.idx)));
+      });
+    }
+
+    if(state.screen === "mission3"){
+      document.querySelectorAll(".option").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const qi = Number(btn.dataset.q);
+          const oi = Number(btn.dataset.o);
+          if(state.m3Answered[qi]) return;
+          handleAnswer(qi, oi);
+        });
+      });
+    }
+
+    if(state.screen === "end"){
+      document.getElementById("playAgainBtn").addEventListener("click", ()=>{
+        playClick();
+        resetGame();
+      });
+    }
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
